@@ -28,16 +28,13 @@ dependencies:
 - servant-auth-server
 - containers
 - text
-- uuid
 - mtl
 - bytestring
 - QuickCheck
 - persistent
 - persistent-postgresql
 - persistent-template
-- safe-exceptions
 - monad-logger
-- persistent-sqlite
 
 library:
   source-dirs: src

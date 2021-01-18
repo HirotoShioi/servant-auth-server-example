@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 334eaeec77b7f1f90a2c639fbb07ec943f6e1bd222a44d7efd4c3e681e5d6f03
+-- hash: bf25808106998c14d7c6b711aa26f125327d58a564fd0fc1f7e7d72bb0146f91
 
 name:           fun-servant
 version:        0.1.0.0
@@ -44,14 +44,11 @@ library
     , mtl
     , persistent
     , persistent-postgresql
-    , persistent-sqlite
     , persistent-template
-    , safe-exceptions
     , servant-auth-server
     , servant-server
     , stm
     , text
-    , uuid
     , wai
     , warp
   default-language: Haskell2010
@@ -74,14 +71,11 @@ executable fun-servant-exe
     , mtl
     , persistent
     , persistent-postgresql
-    , persistent-sqlite
     , persistent-template
-    , safe-exceptions
     , servant-auth-server
     , servant-server
     , stm
     , text
-    , uuid
     , wai
     , warp
   default-language: Haskell2010
@@ -108,14 +102,11 @@ test-suite fun-servant-test
     , mtl
     , persistent
     , persistent-postgresql
-    , persistent-sqlite
     , persistent-template
-    , safe-exceptions
     , servant-auth-server
     , servant-server
     , stm
     , text
-    , uuid
     , wai
     , warp
   default-language: Haskell2010
