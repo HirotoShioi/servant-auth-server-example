@@ -3,24 +3,23 @@
 
 module Config where
 
-import           Data.String
-import           Database.Persist.Postgresql
+import           RIO
+
+import           Database.Persist.Postgresql (ConnectionPool, ConnectionString)
 import           Servant.Auth.Server
 
-data Env = Env {
-    envJWTSettings    :: JWTSettings,
-    envCookieSettings :: CookieSettings,
-    envDatabasePool   :: ConnectionPool
+data Config = Config {
+  cfgPort :: !Int
 }
 
-mkEnv :: ConnectionPool -> IO Env
-mkEnv pool = do
-  -- We *also* need a key to sign the cookies
-  myKey <- generateKey
-  -- Adding some configurations. 'Cookie' requires, in addition to
-  -- CookieSettings, JWTSettings (for signing), so everything is just as before
-  let jwtCfg = defaultJWTSettings myKey
-  return $ Env jwtCfg defaultCookieSettings pool
+defaultConfig :: Config
+defaultConfig = Config 8080
+
+data Env = Env {
+    envJWTSettings    :: !JWTSettings,
+    envCookieSettings :: !CookieSettings,
+    envDatabasePool   :: !ConnectionPool
+}
 
 -- | Database configuration
 data DBConfig = DBConfig {

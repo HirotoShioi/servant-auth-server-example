@@ -19,6 +19,8 @@ module Types
     , Password(..)
     ) where
 
+import           RIO
+
 import           Data.Aeson
 import           Data.Text
 import           Database.Persist.TH

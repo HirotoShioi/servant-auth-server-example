@@ -1,19 +1,20 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE TypeOperators     #-}
 
 module Server where
 
-import           Control.Monad.IO.Class
+import           RIO
+
+import           Control.Monad.Logger        (runNoLoggingT)
 import qualified Data.ByteString.Lazy.Char8  as LC8
-import           Data.Text                   (Text)
 import           Database.Persist.Postgresql
 import           Network.Wai.Handler.Warp
 import           Servant
 import           Servant.Auth.Server
-import           Control.Monad.Logger        (runNoLoggingT)
 
 import           Config
 import           Methods
@@ -58,7 +59,7 @@ handleProtected _ = throwAll err401
 handleLogin
     :: Env
     -> LoginMessage
-    -> Handler (AcceptHeader NoContent)
+    -> Servant.Handler (AcceptHeader NoContent)
 handleLogin (Env jwtSettings cookieSettings pool) loginMessage = do
     eUser <- liftIO $ runWithPool pool $ loginUser loginMessage
     case eUser of
@@ -69,7 +70,7 @@ handleLogin (Env jwtSettings cookieSettings pool) loginMessage = do
                 Nothing           -> throwError err401
                 Just applyCookies -> return $ applyCookies NoContent
 
-handleRegister :: Env -> RegisterMessage -> Handler Login
+handleRegister :: Env -> RegisterMessage -> Servant.Handler Login
 handleRegister (Env _jwt _cookie pool) registerMessage = do
     eUserInfo <- liftIO $ runWithPool pool $ registerUser registerMessage
     case eUserInfo of
@@ -84,12 +85,14 @@ server env =
 
 startServer :: IO ()
 startServer = do
-  pool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
-  runSqlPool (runMigration migrateAll) pool
-  env <- mkEnv pool
-  let cfg = (envCookieSettings env) :. (envJWTSettings env) :. EmptyContext
+  envDatabasePool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
+  runSqlPool (runMigration migrateAll) envDatabasePool
+  myKey <- generateKey
+  let envJWTSettings = defaultJWTSettings myKey
+  let envCookieSettings = defaultCookieSettings
+  let env = Env {..}
+  let cfg = envCookieSettings :. envJWTSettings :. EmptyContext
       --- Here is the actual change
       api = Proxy :: Proxy (API '[JWT])
   let port = 7249
-  putStrLn $ "Running on Port: " <> show port
   run port $ serveWithContext api cfg (server env)

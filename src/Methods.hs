@@ -22,6 +22,8 @@ module Methods
     , UserId
     ) where
 
+import           RIO
+
 import           Control.Monad.Except
 import           Data.Maybe
 import           Data.Text
