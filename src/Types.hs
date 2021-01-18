@@ -22,7 +22,6 @@ module Types
 import           RIO
 
 import           Data.Aeson
-import           Data.Text
 import           Database.Persist.TH
 import           Servant.Auth.Server
 
