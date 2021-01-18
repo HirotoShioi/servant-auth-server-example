@@ -35,6 +35,7 @@ dependencies:
 - persistent-postgresql
 - persistent-template
 - monad-logger
+- rio
 
 library:
   source-dirs: src
@@ -51,6 +52,9 @@ executables:
     dependencies:
     - base
     - fun-servant
+
+default-extensions:
+  - NoImplicitPrelude
 
 tests:
   fun-servant-test:

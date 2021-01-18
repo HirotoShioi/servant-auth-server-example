@@ -1,6 +1,7 @@
 module Main where
 
-import Server
+import           RIO
+import           Server
 
 main :: IO ()
 main = startServer

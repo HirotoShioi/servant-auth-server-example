@@ -22,9 +22,9 @@ module Methods
     , UserId
     ) where
 
+import           RIO
+
 import           Control.Monad.Except
-import           Data.Maybe
-import           Data.Text
 import           Database.Persist
 import           Database.Persist.Postgresql
 import           Database.Persist.TH

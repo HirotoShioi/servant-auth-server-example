@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bf25808106998c14d7c6b711aa26f125327d58a564fd0fc1f7e7d72bb0146f91
+-- hash: 8e9450e7febb134dcf66acc89230580ce4d13493cc19bac30726c0c0a47abb39
 
 name:           fun-servant
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       Paths_fun_servant
   hs-source-dirs:
       src
+  default-extensions: NoImplicitPrelude
   build-depends:
       QuickCheck
     , aeson
@@ -45,6 +46,7 @@ library
     , persistent
     , persistent-postgresql
     , persistent-template
+    , rio
     , servant-auth-server
     , servant-server
     , stm
@@ -59,6 +61,7 @@ executable fun-servant-exe
       Paths_fun_servant
   hs-source-dirs:
       app
+  default-extensions: NoImplicitPrelude
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
@@ -72,6 +75,7 @@ executable fun-servant-exe
     , persistent
     , persistent-postgresql
     , persistent-template
+    , rio
     , servant-auth-server
     , servant-server
     , stm
@@ -87,6 +91,7 @@ test-suite fun-servant-test
       Paths_fun_servant
   hs-source-dirs:
       test
+  default-extensions: NoImplicitPrelude
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
@@ -103,6 +108,7 @@ test-suite fun-servant-test
     , persistent
     , persistent-postgresql
     , persistent-template
+    , rio
     , servant-auth-server
     , servant-server
     , stm
