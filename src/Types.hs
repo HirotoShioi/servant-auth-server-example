@@ -24,9 +24,13 @@ import           RIO
 import           Data.Aeson
 import           Database.Persist.TH
 import           Servant.Auth.Server
+import           Test.QuickCheck
 
 newtype Name = Name { getName :: Text }
     deriving (Show, Eq, Ord, Read)
+
+instance Arbitrary Name where
+    arbitrary = (Name . fromString) <$> arbitrary
 
 derivePersistField "Name"
 
@@ -57,7 +61,7 @@ instance FromJSON RegisterMessage where
 data Login = Login {
     loginUsername :: !Name,
     loginEmail    :: !Text
-} deriving Show
+} deriving (Eq, Show)
 
 instance ToJSON Login where
     toJSON (Login name email) =
@@ -76,6 +80,9 @@ data LoginMessage = LoginMessage {
     loginMessageName     :: !Name,
     loginMessagePassword :: !Password
 }
+
+instance Arbitrary Login where
+    arbitrary = Login <$> arbitrary <*> arbitrary
 
 instance FromJSON LoginMessage where
     parseJSON = withObject "LoginMessage" $ \o -> do

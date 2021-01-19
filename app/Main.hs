@@ -4,4 +4,4 @@ import           RIO
 import           Server
 
 main :: IO ()
-main = startServer
+main = runApp

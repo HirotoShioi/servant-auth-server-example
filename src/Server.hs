@@ -5,6 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell     #-}
 {-# LANGUAGE TypeOperators       #-}
+
 module Server where
 
 import           RIO
@@ -99,22 +100,26 @@ nt env x = transformation x
             Left servantErr -> throwError servantErr
             Right res       -> pure res
 
-startServer :: IO ()
-startServer = do
-  envDatabasePool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
-  runSqlPool (runMigration migrateAll) envDatabasePool
+mkApp :: ConnectionPool -> IO Application
+mkApp envDatabasePool = do
   myKey <- generateKey
   let envJWTSettings = defaultJWTSettings myKey
-  let envCookieSettings = defaultCookieSettings
-  let env = Env {..}
-  let cfg = envCookieSettings :. envJWTSettings :. EmptyContext
+      envCookieSettings = defaultCookieSettings
+      env = Env {..}
+      cfg = envCookieSettings :. envJWTSettings :. EmptyContext
       --- Here is the actual change
       api = Proxy :: Proxy (API '[JWT])
-  let port = 7249
-  run port
-    $ serveWithContext api cfg
+  return $ serveWithContext api cfg
     $ hoistServerWithContext
         api
         (Proxy :: Proxy '[JWTSettings, CookieSettings])
         (nt env)
         server
+
+runApp :: IO ()
+runApp = do
+    pool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
+    runSqlPool (runMigration migrateAll) pool
+    let port = 7249
+    app <- mkApp pool
+    run port app
