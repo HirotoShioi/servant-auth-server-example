@@ -40,12 +40,13 @@ dependencies:
 library:
   source-dirs: src
 
+ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Werror
+
 executables:
   fun-servant-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N

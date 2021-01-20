@@ -37,11 +37,11 @@ derivePersistField "Name"
 newtype Password = Password Text
     deriving (Ord, Read)
 
+instance Show Password where
+    show _p = "Password"
+
 instance Eq Password where
     (Password p1) == (Password p2) = p1 == p2
-
-instance Show Password where
-    show (Password _p) = "Password"
 
 derivePersistField "Password"
 
