@@ -16,10 +16,14 @@ defaultConfig :: Config
 defaultConfig = Config 8080
 
 data Env = Env {
+    envLogFunc        :: !LogFunc,
     envJWTSettings    :: !JWTSettings,
     envCookieSettings :: !CookieSettings,
     envDatabasePool   :: !ConnectionPool
 }
+
+instance HasLogFunc Env where
+  logFuncL = lens envLogFunc (\x y -> x { envLogFunc = y})
 
 -- | Database configuration
 data DBConfig = DBConfig {

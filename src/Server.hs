@@ -57,11 +57,10 @@ handleProtected (Authenticated userInfo) =
     :<|> return (loginEmail userInfo)
 handleProtected _ = throwM err401 :<|> throwM err401
 
-handleLogin
-    :: LoginMessage
-    -> RIO Env (AcceptHeader NoContent)
+handleLogin :: LoginMessage -> RIO Env (AcceptHeader NoContent)
 handleLogin loginMessage = do
     Env{..} <- ask
+    logDebug $ display $ "User logging in: " <> (getName $ loginMessageName loginMessage)
     eUser <- liftIO $ runWithPool envDatabasePool $ loginUser loginMessage
     case eUser of
         Left e -> throwM err401 { errBody = "Login error: " <> LC8.pack (show e) }
@@ -73,10 +72,13 @@ handleLogin loginMessage = do
 
 handleRegister :: RegisterMessage -> RIO Env Login
 handleRegister registerMessage = do
+    logDebug $ display $ "Registering an user: " <> (getName $ registerUserName registerMessage)
     Env{..} <- ask
     eUserInfo <- liftIO $ runWithPool envDatabasePool $ registerUser registerMessage
     case eUserInfo of
-        Left e -> throwM $ err401 { errBody = "Register error: " <> LC8.pack (show e)}
+        Left e -> do
+            logWarn $ "User already exists"
+            throwM $ err401 { errBody = "Register error: " <> LC8.pack (show e)}
         Right userInfo -> return userInfo
 
 --------------------------------------------------------------------------------
@@ -100,26 +102,24 @@ nt env x = transformation x
             Left servantErr -> throwError servantErr
             Right res       -> pure res
 
-mkApp :: ConnectionPool -> IO Application
-mkApp envDatabasePool = do
-  myKey <- generateKey
-  let envJWTSettings = defaultJWTSettings myKey
-      envCookieSettings = defaultCookieSettings
-      env = Env {..}
-      cfg = envCookieSettings :. envJWTSettings :. EmptyContext
-      --- Here is the actual change
-      api = Proxy :: Proxy (API '[JWT])
-  return $ serveWithContext api cfg
-    $ hoistServerWithContext
-        api
-        (Proxy :: Proxy '[JWTSettings, CookieSettings])
-        (nt env)
-        server
-
 runApp :: IO ()
 runApp = do
-    pool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
-    runSqlPool (runMigration migrateAll) pool
-    let port = 7249
-    app <- mkApp pool
-    run port app
+    envDatabasePool <- runNoLoggingT $ createPostgresqlPool (mkConnStr dbConfig) 5
+    runSqlPool (runMigration migrateAll) envDatabasePool
+    myKey <- generateKey
+    let envJWTSettings = defaultJWTSettings myKey
+        envCookieSettings = defaultCookieSettings
+        cfg = envCookieSettings :. envJWTSettings :. EmptyContext
+        api = Proxy :: Proxy (API '[JWT])
+        port = 7249
+    logOpts <- logOptionsHandle stdout True
+    withLogFunc logOpts $ \envLogFunc -> do
+        let env = Env {..}
+        run port
+            $ serveWithContext api cfg
+            $ hoistServerWithContext
+                api
+                (Proxy :: Proxy '[JWTSettings, CookieSettings])
+                (nt env)
+                server
+
